@@ -8,6 +8,7 @@ from celery.utils.log import get_task_logger
 from .BaseRetryTask import BaseTaskWithRetry
 from .Custom import MyTask
 from .celeryApp import app
+from celery.worker.control import control_command
 
 logger = get_task_logger(__name__)
 
@@ -48,7 +49,7 @@ def retry_test(self):
         self.retry(exc=exc)
 
 
-@app.task(base=BaseTaskWithRetry,rate_limit='1/m')
+@app.task(base=BaseTaskWithRetry, rate_limit='1/m')
 def retry_inherit():
     sec = datetime.datetime.now().second
     if sec % 4 != 0:
@@ -56,13 +57,14 @@ def retry_inherit():
     else:
         print(f'========={sec}')
 
+
 @app.task()
 def ignore_test():
     print('igore')
     raise Ignore()
 
 
-@app.task(bind=True, base=BaseTaskWithRetry, autoretry_for = (Exception,))
+@app.task(bind=True, base=BaseTaskWithRetry, autoretry_for=(Exception,))
 def init_task(self):
     print(self.request.__dict__)
     print(1111)
@@ -72,14 +74,17 @@ def init_task(self):
 @app.task
 def error_handler(request, exc, traceback):
     print('Task {0} raised exception: {1!r}\n{2!r}'.format(
-          request.id, exc, traceback))
+        request.id, exc, traceback))
 
-@app.task(bind=True,base=BaseTaskWithRetry)
+
+@app.task(bind=True, base=BaseTaskWithRetry)
 def hello(self, a, b):
     time.sleep(1)
     self.update_state(state="PROGRESS", meta={'progress': 50})
     time.sleep(6)
     self.update_state(state="PROGRESS", meta={'progress': 90})
     time.sleep(1)
-    return 'hello world: %i' % (a+b)
+    return 'hello world: %i' % (a + b)
+
+
 
