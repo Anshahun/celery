@@ -1,5 +1,5 @@
-enable_utc = True
-timezone = 'Europe/London'
+enable_utc = False
+#timezone = 'Europe/London'
 abc = 'bcd'
 test_API = 'aadad'
 broker_url='redis://127.0.0.1:6379'

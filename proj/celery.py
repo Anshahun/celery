@@ -1,5 +1,4 @@
 from celery import Celery
-from celery.worker.control import control_command
 
 app = Celery()
 app.config_from_object('proj.conf.celeryconfig')
@@ -15,14 +14,18 @@ from celery.worker.control import control_command
     signature='[N=1]',  # <- used for help on the command-line.
 )
 def increase_prefetch_count(state, n=1):
-    state.consumer.qos.increment_eventually(n)
     return {'ok': 'prefetch count incremented'}
 
 from celery.worker.control import inspect_command
 
-@inspect_command()
+@inspect_command(alias='dump_conf',)
 def current_prefetch_count(state):
-    return {'prefetch_count': state.consumer.qos.value}
+    return {'prefetch_count': 1}
+
+@inspect_command()
+def report2(state):
+    """Information about Celery installation for bug reports."""
+    return {'1':1}
 
 if __name__ == '__main__':
     app.start()
