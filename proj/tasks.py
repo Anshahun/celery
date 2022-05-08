@@ -3,6 +3,7 @@ import time
 
 import celery
 from celery.exceptions import Ignore
+from celery.schedules import crontab
 from celery.utils.log import get_task_logger
 
 from .BaseRetryTask import BaseTaskWithRetry
@@ -85,6 +86,33 @@ def hello(self, a, b):
     self.update_state(state="PROGRESS", meta={'progress': 90})
     time.sleep(1)
     return 'hello world: %i' % (a + b)
+
+@app.task
+def test(arg):
+    print(arg)
+
+@app.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    # Calls test('hello') every 10 seconds.
+    sender.add_periodic_task(10.0, test.s('hello'), name='add every 10')
+
+    # Calls test('world') every 30 seconds
+    sender.add_periodic_task(30.0, test.s('world'), expires=10)
+
+    # Executes every Monday morning at 7:30 a.m.
+    sender.add_periodic_task(
+        crontab(minute='*/1'),
+        test.s('Happy Mondays!'),
+    )
+
+app.conf.beat_schedule = {
+    # Executes every Monday morning at 7:30 a.m.
+    'add-every-monday-morning': {
+        'task': 'tasks.add',
+        'schedule': crontab(minute='*/1'),
+        'args': (16, 16),
+    },
+}
 
 
 
