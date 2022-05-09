@@ -8,7 +8,7 @@ from celery.utils.log import get_task_logger
 
 from .BaseRetryTask import BaseTaskWithRetry
 from .Custom import MyTask
-from .celery import app
+from proj.celeryApp import app
 from celery.worker.control import control_command
 
 logger = get_task_logger(__name__)
